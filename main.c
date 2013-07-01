@@ -3,24 +3,22 @@
 #include <stdio.h>
 
 int main(int argc, const char *argv[]) {
-	int returnCode = 0;
+	int retVal = 0;
 	struct USBDevice *device = NULL;
 	const char *error = NULL;
 	const char *vp;
+	USBStatus uStatus;
 	if ( argc != 2 ) {
 		fprintf(stderr, "Synopsis: %s <VID:PID>\n", argv[0]);
-		FAIL(2);
-	}
-	if ( usbInitialise(0, &error) ) {
-		FAIL(1);
+		FAIL(1, cleanup);
 	}
 	vp = argv[1];
-	if ( usbOpenDevice(vp, 1, 0, 0, &device, &error) ) {
-		FAIL(3);
-	}
-	if ( usbPrintConfiguration(device, stdout, &error) ) {
-		FAIL(4);
-	}
+	uStatus = usbInitialise(0, &error);
+	CHECK_STATUS(uStatus, 2, cleanup);
+	uStatus = usbOpenDevice(vp, 1, 0, 0, &device, &error);
+	CHECK_STATUS(uStatus, 3, cleanup);
+	uStatus = usbPrintConfiguration(device, stdout, &error);
+	CHECK_STATUS(uStatus, 4, cleanup);
 cleanup:
 	if ( device ) {
 		usbCloseDevice(device, 0);
@@ -29,5 +27,5 @@ cleanup:
 		fprintf(stderr, "%s: %s\n", argv[0], error);
 		errFree(error);
 	}
-	return returnCode;
+	return retVal;
 }
